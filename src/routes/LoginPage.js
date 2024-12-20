@@ -1,30 +1,47 @@
 import { useState, useEffect, useContext } from 'react';
-import { AuthContext } from '../AuthContext';
-import { ChevronDown, Eye, EyeOff, ArrowLeft, User } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../AuthContext'; // Context for authentication handling
+import { ChevronDown, Eye, EyeOff, ArrowLeft, User } from 'lucide-react'; // Icons for UI
+import { Link, useNavigate } from 'react-router-dom'; // React Router for navigation and links
 
+/**
+ * LoginPage Component
+ * Handles user login functionality with:
+ * - Email and password authentication.
+ * - Two-factor authentication support.
+ * - Form validation and alert handling.
+ */
 export default function LoginPage() {
-  const { login, loading } = useContext(AuthContext);
-  const [showPassword, setShowPassword] = useState(false);
+  const { login, loading } = useContext(AuthContext); // Authentication context
+  const [showPassword, setShowPassword] = useState(false); // Toggle for showing/hiding password
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    rememberMe: false
-  });
-  const [alertMessage, setAlertMessage] = useState('');
-  const [checkedForTwoFactor, setCheckedForTwoFactor] = useState(false);
-  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
-  const navigate = useNavigate();
+    rememberMe: false,
+  }); // Form data state
+  const [alertMessage, setAlertMessage] = useState(''); // Alert message for errors or notifications
+  const [checkedForTwoFactor, setCheckedForTwoFactor] = useState(false); // Indicates if two-factor authentication is checked
+  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false); // State for two-factor authentication status
+  const navigate = useNavigate(); // React Router navigation hook
 
+  /**
+   * Handle input field changes.
+   * Updates the form data state when fields change.
+   * @param {Event} e - The input change event.
+   */
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setAlertMessage('');
-    setFormData(prevState => ({
+    setAlertMessage(''); // Clear alert messages on new input
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
+  /**
+   * Handle form submission for login.
+   * Sends login credentials to the server and checks for two-factor authentication.
+   * @param {Event} e - The form submission event.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -34,6 +51,7 @@ export default function LoginPage() {
     };
 
     try {
+      // API call for user login
       const loginResponse = await fetch('https://api.onboardingai.org/auth/login', {
         method: 'POST',
         credentials: 'include',
@@ -49,54 +67,55 @@ export default function LoginPage() {
         throw new Error(loginData.message || 'Network response was not ok');
       }
 
+      // Check for two-factor authentication
       const twoFactorResponse = await fetch('https://api.onboardingai.org/auth/has-two-factor', {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email: formData.email
-        })
+        body: JSON.stringify({ email: formData.email }),
       });
-      
 
       const twoFactorData = await twoFactorResponse.json();
-      
+
       if (twoFactorData.success && twoFactorData.twoFactorAuthEnabled) {
-        setIsTwoFactorEnabled(true);
+        setIsTwoFactorEnabled(true); // Enable two-factor authentication
       }
 
-      setCheckedForTwoFactor(true);
+      setCheckedForTwoFactor(true); // Mark two-factor check as complete
     } catch (err) {
       console.error('Login error:', err);
-      setAlertMessage(`Failed: ${err.message}`);
+      setAlertMessage(`Failed: ${err.message}`); // Display error message
     }
   };
 
+  /**
+   * Effect to handle post-login navigation based on authentication state.
+   * Redirects to the dashboard or two-factor authentication page as necessary.
+   */
   useEffect(() => {
     const handleLogin = async () => {
       if (checkedForTwoFactor) {
         if (isTwoFactorEnabled) {
-          navigate(`/two-factor?email=${btoa(formData.email)}`);
+          navigate(`/two-factor?email=${btoa(formData.email)}`); // Redirect to two-factor authentication
         } else {
-          await login();
-          if (!loading){
-            navigate('/dashboard');
+          await login(); // Perform login
+          if (!loading) {
+            navigate('/dashboard'); // Redirect to dashboard
           }
         }
       }
     };
-  
+
     handleLogin();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkedForTwoFactor, navigate, isTwoFactorEnabled, formData.email]);
-  
+  }, [checkedForTwoFactor, navigate, isTwoFactorEnabled, formData.email, login, loading]);
+
   return (
     <div className="min-h-screen bg-[#E6E6FA] flex flex-col">
       {/* Top Bar */}
       <div className="bg-white p-4 flex justify-between items-center">
-        <Link to='/' className="text-gray-600 hover:text-gray-900">
+        <Link to="/" className="text-gray-600 hover:text-gray-900">
           <ArrowLeft className="h-6 w-6" />
         </Link>
         <nav className="hidden md:flex space-x-6">
@@ -119,18 +138,17 @@ export default function LoginPage() {
                 <span className="text-black">AI</span>
               </div>
             </div>
-            
-            {/* Alert message */}
+
+            {/* Alert message for errors */}
             {alertMessage && (
-              <div
-                className="mb-4 p-4 rounded-lg text-white bg-red-500"
-              >
+              <div className="mb-4 p-4 rounded-lg text-white bg-red-500">
                 {alertMessage}
               </div>
             )}
 
             <h1 className="text-3xl font-bold mb-6 text-center">Log in</h1>
             <form onSubmit={handleSubmit}>
+              {/* Email input */}
               <div className="mb-4">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                   Email address
@@ -145,13 +163,15 @@ export default function LoginPage() {
                   required
                 />
               </div>
+
+              {/* Password input */}
               <div className="mb-6">
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                   Password
                 </label>
                 <div className="relative">
                   <input
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     id="password"
                     name="password"
                     value={formData.password}
@@ -168,6 +188,8 @@ export default function LoginPage() {
                   </button>
                 </div>
               </div>
+
+              {/* Remember Me checkbox */}
               <div className="flex items-center mb-6">
                 <input
                   type="checkbox"
@@ -181,17 +203,21 @@ export default function LoginPage() {
                   Remember me
                 </label>
               </div>
+
+              {/* Terms and Privacy */}
               <p className="text-sm text-gray-600 mb-6">
                 By continuing, you agree to the{' '}
-                <Link href="/terms" className="text-[#4285F4] hover:underline">
+                <Link to="/terms" className="text-[#4285F4] hover:underline">
                   Terms of use
                 </Link>{' '}
                 and{' '}
-                <Link href="/privacy" className="text-[#4285F4] hover:underline">
+                <Link to="/privacy" className="text-[#4285F4] hover:underline">
                   Privacy Policy
                 </Link>
                 .
               </p>
+
+              {/* Submit button */}
               <button
                 type="submit"
                 className="w-full bg-gray-300 text-gray-700 px-4 py-2 rounded-full font-medium hover:bg-gray-400 transition-colors"
@@ -199,11 +225,15 @@ export default function LoginPage() {
                 Log in
               </button>
             </form>
+
+            {/* Forgot password link */}
             <div className="mt-6 text-center">
               <Link to="/forgot-password" className="text-sm text-[#4285F4] hover:underline">
                 Forgot your password
               </Link>
             </div>
+
+            {/* Signup link */}
             <div className="mt-4 text-center">
               <p className="text-sm text-gray-600">
                 Don't have an account?{' '}
@@ -220,9 +250,9 @@ export default function LoginPage() {
       <footer className="bg-white py-6 px-8">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center">
           <div className="w-full sm:w-auto flex justify-center sm:justify-start items-center space-x-4 mb-4 sm:mb-0">
-            <Link href="/" className="text-gray-600 hover:text-gray-900">Home</Link>
-            <Link href="/about" className="text-gray-600 hover:text-gray-900">About</Link>
-            <Link href="/contact" className="text-gray-600 hover:text-gray-900">Contact</Link>
+            <Link to="/" className="text-gray-600 hover:text-gray-900">Home</Link>
+            <Link to="/about" className="text-gray-600 hover:text-gray-900">About</Link>
+            <Link to="/contact" className="text-gray-600 hover:text-gray-900">Contact</Link>
           </div>
           <div className="w-full sm:w-auto text-center sm:text-left text-gray-600 text-sm">
             © 2024 OnboardAI. All rights reserved.
@@ -230,9 +260,13 @@ export default function LoginPage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
 
+/**
+ * NavItem Component
+ * Displays a navigation item with a dropdown chevron.
+ */
 function NavItem({ text }) {
   return (
     <div className="relative group">
@@ -241,5 +275,5 @@ function NavItem({ text }) {
         <ChevronDown className="w-4 h-4" />
       </button>
     </div>
-  )
+  );
 }

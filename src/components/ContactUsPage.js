@@ -1,34 +1,57 @@
 import React, { useState } from 'react';
-import Header from './Header';
-import { Send } from 'lucide-react';
+import Header from './Header'; // Import the Header component for page navigation
+import { Send } from 'lucide-react'; // Import the Send icon for the submit button
 
+/**
+ * ContactUsPage Component
+ * A simple contact form for users to send messages. It includes:
+ * - Input fields for full name, email, and message.
+ * - Form validation to ensure all fields are filled.
+ * - Handles form submission and resets form after submission.
+ */
 const ContactUsPage = () => {
+  // State to manage form data
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     message: ''
   });
 
+  /**
+   * Handle input field changes
+   * Updates the form data state when the user types in the input fields.
+   * @param {Event} e - The input change event
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: value
+      [name]: value // Update the corresponding field in the state
     }));
   };
 
+  /**
+   * Handle form submission
+   * Prevents the default form submission behavior, logs the form data, and clears the form.
+   * @param {Event} e - The form submission event
+   */
   const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Form submitted:', formData);
-    setFormData({ fullName: '', email: '', message: '' });
+    e.preventDefault(); // Prevent default form submission
+    console.log('Form submitted:', formData); // Log the form data to the console
+    setFormData({ fullName: '', email: '', message: '' }); // Reset the form fields
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'rgba(75, 52, 217, 0.2)' }}>
-      <Header />
+    <div
+      className="min-h-screen"
+      style={{ backgroundColor: 'rgba(75, 52, 217, 0.2)' }} // Light purple background
+    >
+      <Header /> {/* Header component for navigation */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 p-8 lg:p-12">
+            
+            {/* Left section: Information and image */}
             <div className="flex flex-col justify-center">
               <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">
                 Let's Start a <span className="text-purple-600">Conversation</span>
@@ -44,11 +67,18 @@ const ContactUsPage = () => {
                 />
               </div>
             </div>
+
+            {/* Right section: Contact form */}
             <div className="bg-white rounded-2xl shadow-xl p-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-6">Get in Touch</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
+                
+                {/* Full Name input */}
                 <div>
-                  <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="fullName"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Full Name
                   </label>
                   <input
@@ -62,8 +92,13 @@ const ContactUsPage = () => {
                     placeholder="John Doe"
                   />
                 </div>
+
+                {/* Email input */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Email Address
                   </label>
                   <input
@@ -77,8 +112,13 @@ const ContactUsPage = () => {
                     placeholder="john@example.com"
                   />
                 </div>
+
+                {/* Message textarea */}
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="message"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Your Message
                   </label>
                   <textarea
@@ -92,12 +132,14 @@ const ContactUsPage = () => {
                     placeholder="How can we help you?"
                   ></textarea>
                 </div>
+
+                {/* Submit button */}
                 <div>
                   <button
                     type="submit"
                     className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-150 ease-in-out"
                   >
-                    <Send className="w-5 h-5 mr-2" />
+                    <Send className="w-5 h-5 mr-2" /> {/* Send icon */}
                     Send Message
                   </button>
                 </div>

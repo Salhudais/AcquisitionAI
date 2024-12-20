@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { Star, ChevronDown } from 'lucide-react';
-import Header from '../components/Header';
+import { Star, ChevronDown } from 'lucide-react'; // Icons for UI
+import Header from '../components/Header'; // Header component
 
-
-
-// Sample review data
+// Sample review data for initialization
 const initialReviews = [
   { id: 1, author: "John Doe", rating: 5, date: "2023-05-15", text: "Excellent product! Exceeded my expectations." },
   { id: 2, author: "Jane Smith", rating: 4, date: "2023-05-10", text: "Great product, but could use some minor improvements." },
@@ -13,6 +11,12 @@ const initialReviews = [
   { id: 5, author: "Chris Lee", rating: 2, date: "2023-04-25", text: "Disappointed with the quality. Expected better." },
 ];
 
+/**
+ * StarRating Component
+ * Displays a row of clickable stars to indicate a rating.
+ * @param {number} rating - Current rating value.
+ * @param {function} [setRating] - Callback function to set the rating.
+ */
 const StarRating = ({ rating, setRating }) => {
   return (
     <div className="flex">
@@ -20,18 +24,23 @@ const StarRating = ({ rating, setRating }) => {
         <Star
           key={i}
           className={`w-7 h-7 ${i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`}
-          onClick={() => setRating && setRating(i + 1)}
+          onClick={() => setRating && setRating(i + 1)} // Allow rating updates if `setRating` is provided
         />
       ))}
     </div>
   );
 };
 
+/**
+ * ReviewSummary Component
+ * Displays a summary of all reviews, including average rating and distribution.
+ * @param {array} reviews - List of reviews.
+ */
 const ReviewSummary = ({ reviews }) => {
-  const totalReviews = reviews.length;
-  const averageRating = reviews.reduce((acc, review) => acc + review.rating, 0) / totalReviews;
+  const totalReviews = reviews.length; // Total number of reviews
+  const averageRating = reviews.reduce((acc, review) => acc + review.rating, 0) / totalReviews; // Average rating
   const ratingCounts = reviews.reduce((acc, review) => {
-    acc[review.rating] = (acc[review.rating] || 0) + 1;
+    acc[review.rating] = (acc[review.rating] || 0) + 1; // Count reviews for each rating
     return acc;
   }, {});
 
@@ -51,7 +60,7 @@ const ReviewSummary = ({ reviews }) => {
           <div className="flex-grow mx-4 bg-gray-200 rounded-full h-2">
             <div
               className="bg-yellow-400 h-2 rounded-full"
-              style={{ width: `${((ratingCounts[star] || 0) / totalReviews) * 100}%` }}
+              style={{ width: `${((ratingCounts[star] || 0) / totalReviews) * 100}%` }} // Bar width proportional to rating count
             ></div>
           </div>
           <span className="w-12 text-sm text-right text-gray-600">
@@ -63,12 +72,19 @@ const ReviewSummary = ({ reviews }) => {
   );
 };
 
+/**
+ * ReviewList Component
+ * Displays a filtered and sorted list of reviews.
+ * @param {array} reviews - List of all reviews.
+ * @param {string} filter - Filter for star ratings ('all' or a specific rating).
+ * @param {string} sort - Sorting option ('newest' or 'oldest').
+ */
 const ReviewList = ({ reviews, filter, sort }) => {
   const filteredReviews = reviews
-    .filter((review) => filter === 'all' || review.rating === parseInt(filter))
+    .filter((review) => filter === 'all' || review.rating === parseInt(filter)) // Filter reviews by rating
     .sort((a, b) => {
-      if (sort === 'newest') return new Date(b.date) - new Date(a.date);
-      return new Date(a.date) - new Date(b.date);
+      if (sort === 'newest') return new Date(b.date) - new Date(a.date); // Sort by newest
+      return new Date(a.date) - new Date(b.date); // Sort by oldest
     });
 
   return (
@@ -87,15 +103,22 @@ const ReviewList = ({ reviews, filter, sort }) => {
   );
 };
 
+/**
+ * ReviewForm Component
+ * A form for submitting a new review.
+ * @param {function} onSubmit - Callback function to handle form submission.
+ */
 const ReviewForm = ({ onSubmit }) => {
-  const [author, setAuthor] = useState('');
-  const [rating, setRating] = useState(0);
-  const [text, setText] = useState('');
+  const [author, setAuthor] = useState(''); // State for the reviewer's name
+  const [rating, setRating] = useState(0); // State for the review's rating
+  const [text, setText] = useState(''); // State for the review text
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (author && rating && text) {
+      // Pass new review data to the parent component
       onSubmit({ author, rating, text, date: new Date().toISOString().split('T')[0] });
+      // Clear the form after submission
       setAuthor('');
       setRating(0);
       setText('');
@@ -141,25 +164,36 @@ const ReviewForm = ({ onSubmit }) => {
   );
 };
 
+/**
+ * ReviewPage Component
+ * The main page for displaying reviews with filtering, sorting, and submission options.
+ */
 export default function ReviewPage() {
-  const [reviews, setReviews] = useState(initialReviews);
-  const [filter, setFilter] = useState('all');
-  const [sort, setSort] = useState('newest');
+  const [reviews, setReviews] = useState(initialReviews); // State to manage all reviews
+  const [filter, setFilter] = useState('all'); // State for the selected filter
+  const [sort, setSort] = useState('newest'); // State for the selected sorting option
 
+  /**
+   * Handle submission of a new review.
+   * Adds the new review to the list of reviews.
+   * @param {object} newReview - The new review to add.
+   */
   const handleNewReview = (newReview) => {
-    setReviews([{ id: reviews.length + 1, ...newReview }, ...reviews]);
+    setReviews([{ id: reviews.length + 1, ...newReview }, ...reviews]); // Add the new review at the top
   };
 
   return (
-    
     <div className="min-h-screen bg-[rgba(219,214,247,1)] py-16 px-4 sm:px-6 lg:px-8">
-
       <div className="max-w-4xl mx-auto">
+        {/* Summary of reviews */}
         <ReviewSummary reviews={reviews} />
+        {/* Form for submitting a new review */}
         <ReviewForm onSubmit={handleNewReview} />
+        {/* Review list with filters and sorting */}
         <div className="bg-white p-8 rounded-2xl shadow-lg">
           <div className="flex justify-between items-center mb-6">
             <div className="relative">
+              {/* Filter dropdown */}
               <select
                 className="appearance-none bg-gray-100 text-[rgba(0,0,0,1)] text-lg py-2 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:ring-2 focus:ring-[rgba(219,214,247,1)]"
                 value={filter}
@@ -177,6 +211,7 @@ export default function ReviewPage() {
               </div>
             </div>
             <div className="relative">
+              {/* Sort dropdown */}
               <select
                 className="appearance-none bg-gray-100 text-[rgba(0,0,0,1)] text-lg py-2 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:ring-2 focus:ring-[rgba(219,214,247,1)]"
                 value={sort}
@@ -190,6 +225,7 @@ export default function ReviewPage() {
               </div>
             </div>
           </div>
+          {/* Render the filtered and sorted reviews */}
           <ReviewList reviews={reviews} filter={filter} sort={sort} />
         </div>
       </div>
